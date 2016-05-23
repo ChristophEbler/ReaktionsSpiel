@@ -3,6 +3,7 @@
 #include <ITDB02_Touch.h>
 #define NUM_LEDS 16
 #define DATA_PIN 8
+
 // Declare which fonts we will be using
 extern uint8_t BigFont[];
 //extern uint8_t SevenSegNumFont[];
@@ -12,11 +13,22 @@ UTFT          myGLCD(CTE70, 38, 39, 40, 41);
 ITDB02_Touch  myTouch(6, 5, 4, 3, 2);
 
 CRGB leds[NUM_LEDS];
+int phLed[8][2]={
+  {0,1},
+  {2,3},
+  {4,5},
+  {6,7},
+  {8,9},
+  {10,11},
+  {12,13},
+  {14,15},
+};
 
 int x, y;
 char buf[10];
 long maxtime = 60000;
 unsigned long timer;
+unsigned long blinkTimer;
 long Time =maxtime; 
 bool start =false;
 bool inTime = true;
@@ -68,7 +80,7 @@ void setup()
   myGLCD.drawRoundRect (550, 370, 790, 470);
   myGLCD.print("Blink", 630, 410);
   myGLCD.setBackColor(0, 0,0);
-  
+  allOff();
 }
 
 
@@ -82,9 +94,7 @@ void loop()
       myTouch.read();
      y=myTouch.getX();
       x=myTouch.getY();
-      Serial.print(x);
-      Serial.print("\t");
-      Serial.println(y);
+    
       
 
      if (y > 270&&y<470)
@@ -92,6 +102,9 @@ void loop()
       if(x>0 && x<60)
       {if (Time ==maxtime)
       {
+        //Startbedingugen
+        generateStartPoint();
+      
          timer =millis();
         start =true;
       }
@@ -101,6 +114,7 @@ void loop()
       {
         Time = maxtime;
         start =false;
+        allOff();
       }
       if(x>180 && x<245)
       {
@@ -113,7 +127,7 @@ void loop()
           BlinkShow = false;
         }
         OldBlinkShow =BlinkShow;
-        Serial.println(BlinkShow);
+     
         start =false;
       }
      }
@@ -142,6 +156,7 @@ void loop()
      myGLCD.setColor(0, 255, 0); 
      myGLCD.drawRoundRect (10, 40, 790, 160);
      myGLCD.print("Zeit", 20, 10);
+     
    }
     else 
     {
@@ -149,31 +164,97 @@ void loop()
    myGLCD.drawRoundRect (10, 40, 790, 160);
    myGLCD.print("Zeit", 20, 10);
      }
+     //zeit 
     ltoa(Time, buf, 10); 
+    
     myGLCD.print(buf, 40,100);
-     if (BlinkShow == true)
-     {
-       
-      leds[0].setRGB( 0, 0,255);
-      leds[1] = leds[0];
-      FastLED.show();
-      delay(500);
-      leds[0].setRGB( 0, 255,0);
-      leds[1] = leds[0];
-      FastLED.show();
-      delay(500);
-      leds[0].setRGB( 255, 0,0);
-      leds[1] = leds[0];
-      FastLED.show();
-      delay(500);
+    if (Time == 0)
+    {
+       myGLCD.print("0           ", 40,100);
       }
-     if (BlinkShow == false)
+
+    BlinkShowFunc(BlinkShow );
+
+}
+void BlinkShowFunc(boolean LBlinkShow )
+{
+       if (LBlinkShow == true)
      {
-   leds[0].setRGB( 0, 0, 0);
-   leds[1] = leds[0];
+      delay (200);
+       ledSetCollor(0,0,0, 255); 
+      
+      if ((millis() -blinkTimer)>1000)
+      {
+        ledSetCollor(1,255,0, 0);
+      }
+        if ((millis() -blinkTimer)>2000)
+      {
+        ledSetCollor(2,0,255, 0);
+      }
+        if ((millis() -blinkTimer)>3000)
+      {
+        ledSetCollor(3,0,0, 255);
+      }
+        if ((millis() -blinkTimer)>4000)
+      {
+        ledSetCollor(4,255,0, 0);
+      }
+        if ((millis() -blinkTimer)>5000)
+      {
+        ledSetCollor(5,0,255, 0);
+      }
+        if ((millis() -blinkTimer)>6000)
+      {
+        ledSetCollor(6,0,0, 255);
+      }
+       if ((millis() -blinkTimer)>7000)
+      {
+        ledSetCollor(7,255,255, 255);
+         blinkTimer = millis();
+      }
+      
+      
+
+      
+      }
+     if (LBlinkShow == false)
+     {
+      blinkTimer = millis();
+  
+      delay(200);
+
+      }
+  } 
+ void ledSetCollor(int nr,int r,int g, int b)
+ {
+  
+    leds[ phLed[nr][0]].setRGB( g, r, b);
+   leds[phLed[nr][1]] = leds[phLed[nr][0]];
  
           FastLED.show();
-         delay(300);
-      }
-}
-
+  
+ }
+ void generateStartPoint()
+ {
+  int stIndex = random(0, 8);
+  Serial.println(stIndex);
+  ledSetCollor(stIndex,0,0, 255); 
+  while(!(analogRead(stIndex)>=900))
+  {
+  }
+ }
+ void play()
+ {
+  
+ }
+ void allOff()
+ {
+   ledSetCollor(0,0,0, 0);
+   ledSetCollor(1,0,0, 0);
+   ledSetCollor(2,0,0, 0);
+   ledSetCollor(3,0,0, 0);
+   ledSetCollor(4,0,0, 0);
+   ledSetCollor(5,0,0, 0);
+   ledSetCollor(6,0,0, 0);
+   ledSetCollor(7,0,0, 0);
+  }

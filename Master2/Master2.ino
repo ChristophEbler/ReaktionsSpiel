@@ -3,6 +3,7 @@
 #include <ITDB02_Touch.h>
 #define NUM_LEDS 16
 #define DATA_PIN 8
+
 // Declare which fonts we will be using
 extern uint8_t BigFont[];
 //extern uint8_t SevenSegNumFont[];
@@ -12,11 +13,22 @@ UTFT          myGLCD(CTE70, 38, 39, 40, 41);
 ITDB02_Touch  myTouch(6, 5, 4, 3, 2);
 
 CRGB leds[NUM_LEDS];
+int phLed[8][2]={
+  {0,1},
+  {2,3},
+  {4,5},
+  {6,7},
+  {8,9},
+  {10,11},
+  {12,13},
+  {14,15},
+};
 
 int x, y;
 char buf[10];
 long maxtime = 60000;
 unsigned long timer;
+unsigned long blinkTimer;
 long Time =maxtime; 
 bool start =false;
 bool inTime = true;
@@ -151,29 +163,49 @@ void loop()
      }
     ltoa(Time, buf, 10); 
     myGLCD.print(buf, 40,100);
-     if (BlinkShow == true)
+
+    BlinkShowFunc(BlinkShow );
+
+}
+void BlinkShowFunc(boolean LBlinkShow )
+{
+       if (LBlinkShow == true)
      {
-       
-      leds[0].setRGB( 0, 0,255);
-      leds[1] = leds[0];
-      FastLED.show();
-      delay(500);
-      leds[0].setRGB( 0, 255,0);
-      leds[1] = leds[0];
-      FastLED.show();
-      delay(500);
-      leds[0].setRGB( 255, 0,0);
-      leds[1] = leds[0];
-      FastLED.show();
-      delay(500);
+      delay (200);
+       ledSetCollor(0,0,0, 255); 
+      
+      if ((millis() -blinkTimer)>1000)
+      {
+        ledSetCollor(1,255,0, 0);
       }
-     if (BlinkShow == false)
+        if ((millis() -blinkTimer)>2000)
+      {
+        ledSetCollor(2,0,255, 0);
+      }
+       if ((millis() -blinkTimer)>3000)
+      {
+        ledSetCollor(3,0,0, 255);
+         blinkTimer = millis();
+      }
+      
+      
+
+      
+      }
+     if (LBlinkShow == false)
      {
-   leds[0].setRGB( 0, 0, 0);
-   leds[1] = leds[0];
+      blinkTimer = millis();
+       ledSetCollor(0,0,0,0);
+      delay(200);
+
+      }
+  } 
+ void ledSetCollor(int nr,int r,int g, int b)
+ {
+  
+    leds[ phLed[nr][0]].setRGB( g, r, b);
+   leds[phLed[nr][1]] = leds[phLed[nr][0]];
  
           FastLED.show();
-         delay(300);
-      }
-}
-
+  
+ }
