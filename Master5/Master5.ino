@@ -32,7 +32,7 @@ long pauseTime =500;
 long holdTime =1000;
 unsigned long timer;
 unsigned long blinkTimer;
-int analogref =800;
+int analogref =600;
 unsigned long pausetimer;
 unsigned long holdtimer;
 
@@ -122,8 +122,8 @@ void loop()
       {
         //Startbedingugen
           points =0;
-             ltoa(points, buf1, 10); 
-           myGLCD.print( buf1, 40,250);
+          
+           myGLCD.print( "0             ", 40,250);
          
             
           firstPoint =true;
@@ -210,8 +210,13 @@ void loop()
     
     if (Time == 0)
     {
-       myGLCD.print("0           ", 40,100);
+       myGLCD.print("0             ", 40,100);
       }
+
+    if (points == 0)
+    {
+       myGLCD.print( "0             ", 40,250);
+    }
 if (inTime == true&&start == true)
 {
      if (nextPoint == true)
