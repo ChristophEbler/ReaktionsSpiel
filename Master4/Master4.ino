@@ -26,16 +26,34 @@ int phLed[8][2]={
 
 int x, y;
 char buf[10];
+char buf1[10];
 long maxtime = 60000;
+long pauseTime =1000;
+long holdTime =1000;
 unsigned long timer;
 unsigned long blinkTimer;
+int analogref =800;
+unsigned long pausetimer;
+unsigned long holdtimer;
+
 long Time =maxtime; 
+
 bool start =false;
 bool inTime = true;
 bool BlinkShow =false;
 bool OldBlinkShow =false;
+bool point =false;
+bool pointflag = false;
+bool pointLive = false;
+bool firstPoint =false;
+bool pointPressed =false;
+bool pointAktiv =false;
+bool nextPoint =false;
 
+int startPointAdr = 9;
+int aktPountAdr = 9;
 
+long points =0;
 void setup()
 {
   FastLED.addLeds<WS2812B, DATA_PIN, RGB>(leds, NUM_LEDS);
@@ -103,10 +121,20 @@ void loop()
       {if (Time ==maxtime)
       {
         //Startbedingugen
+          points =0;
+             ltoa(points, buf1, 10); 
+           myGLCD.print( buf1, 40,250);
+         
+            
+          firstPoint =true;
         generateStartPoint();
-      
+        delay(100);
+      firstPoint =true;
          timer =millis();
         start =true;
+     //   delay(100);
+         allOff();
+         point =true;
       }
       }
 
@@ -150,6 +178,7 @@ void loop()
      else 
      {
       inTime = true ;
+      
       }
    if(inTime == true )
    {
@@ -157,22 +186,78 @@ void loop()
      myGLCD.drawRoundRect (10, 40, 790, 160);
      myGLCD.print("Zeit", 20, 10);
      
+    myGLCD.setColor(0, 255, 0); 
+   myGLCD.drawRoundRect (10, 200, 790, 320);
+   myGLCD.print("Punkte", 20, 180);
+     
    }
     else 
     {
        myGLCD.setColor(255, 0, 0); 
    myGLCD.drawRoundRect (10, 40, 790, 160);
    myGLCD.print("Zeit", 20, 10);
+   
+    myGLCD.setColor(255, 0, 0); 
+   myGLCD.drawRoundRect (10, 200, 790, 320);
+   myGLCD.print("Punkte", 20, 180);
      }
      //zeit 
-    ltoa(Time, buf, 10); 
+    ltoa(Time, buf, 10);
+     ltoa(points, buf1, 10); 
     
     myGLCD.print(buf, 40,100);
+    myGLCD.print( buf1, 40,250);
+    
     if (Time == 0)
     {
        myGLCD.print("0           ", 40,100);
       }
-
+if (inTime == true&&start == true)
+{
+     if (nextPoint == true)
+      {
+       nextPoint = false;
+       point =true;
+       }
+      
+  if (point ==true)
+  {
+    pausetimer = millis();
+     point =false;
+     pointflag = true;
+  }
+  if ( (millis()-pausetimer > pauseTime&&pointflag == true))
+  {
+   
+   aktPountAdr = generatePlayPoint();
+   holdtimer = millis();
+   pointAktiv =true;
+    if (  firstPoint ==true)
+    {
+        firstPoint =false;
+      }
+      pointPressed = false;
+    pointflag = false;
+    }
+if ((millis()-holdtimer >holdTime)&&pointAktiv)
+{ 
+  pointAktiv =false;
+  
+  nextPoint = true;
+  
+}
+    if ((analogRead(aktPountAdr)>=analogref)&&inTime == true&&start == true &&  pointPressed ==false&& pointAktiv ==true)
+    {
+       pointPressed = true;
+      points =points +1;
+       
+      ledSetCollor(aktPountAdr,0,255,0); 
+      }
+      if (pointAktiv ==false)
+      {ledSetCollor(aktPountAdr,0,0,0); }
+      
+   
+  }
     BlinkShowFunc(BlinkShow );
 
 }
@@ -237,15 +322,25 @@ void BlinkShowFunc(boolean LBlinkShow )
  void generateStartPoint()
  {
   int stIndex = random(0, 8);
-  Serial.println(stIndex);
+  startPointAdr =stIndex;
+
   ledSetCollor(stIndex,0,0, 255); 
-  while(!(analogRead(stIndex)>=900))
+  while(!(analogRead(stIndex)>=analogref))
   {
   }
  }
  void play()
  {
   
+ }
+  int generatePlayPoint()
+ {int stIndex;
+ 
+   stIndex = random(0, 8);
+
+
+  ledSetCollor(stIndex,255,0, 0);
+  return stIndex;
  }
  void allOff()
  {
